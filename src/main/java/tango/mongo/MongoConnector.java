@@ -1,6 +1,7 @@
 package tango.mongo;
 
 import com.mongodb.*;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
@@ -71,6 +72,7 @@ public class MongoConnector {
     public final static int R = 0;
     public final static int S = 2;
     public final static int SP = 3;
+    public final static int TMB = -1;
     public final static int MASKS = -2;
     public static String defaultHost_DB = "localhost";
     public static String[] collections = new String[]{"experiment", "field", "nucleus", "object3d", "selection", "structureMeasurement", "nucleusThumbnail.files", "nucleusThumbnail.chunks", "fieldThumbnail.files", "fieldThumbnail.chunks"};
@@ -78,23 +80,31 @@ public class MongoConnector {
     public static SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, false, false, true);
     private final boolean interactive = true;
     ObjectId userId;
+    Thread mongod;
     // new version
-    MongoDatabase project2, settings2, admin2;
-    private MongoClient mongoClient;
+    private MongoClient mng;
+
     private DB project, settings, admin;
     private DBCollection adminUser, adminProject, help;
     private DBCollection channelSettings, nucleusSettings;
     private DBCollection nucleus, experiment, object3D, field, structureMeasurement, selection;
     private GridFS gfsField, gfsNucleus, gfsFieldThumbnail, gfsNucleusThumbnail;
-    private String host, username, projectName;
+    private String host, username, projectName, mngUser, mngPwd, hostString;
+    private MongoClientURI mongoHost;
 
-    public MongoConnector(String host_DB) {
+    public MongoConnector(String host_DB, String mngUser, String mngPwd) {
         boolean r;
         if (host_DB == null || host_DB.equals("")) {
             host = defaultHost_DB;
         } else {
             host = host_DB;
         }
+        if ((mngUser == null || mngUser.equals("")) || (mngPwd == null || mngPwd.equals(""))) {
+           	hostString = "mongodb://" + host ;
+        } else {
+           	hostString = "mongodb://" + mngUser + ":" + mngPwd + "@" + host + "/tango_admin?authSource=admin";
+        }
+        mongoHost = new MongoClientURI(hostString);
         createMongo();
         IJ.showStatus("testing connection with db...");
         if (isConnected()) {
@@ -129,7 +139,7 @@ public class MongoConnector {
         List<String> l;
         try {
             MongoIterable ll = m.listDatabaseNames();
-            //l = mongoClient.getDatabaseNames(); // deprecated
+            l = m.getDatabaseNames();
         } catch (MongoException e) {
             if (Core.GUIMode) {
                 IJ.log("connection failed..");
@@ -205,30 +215,30 @@ public class MongoConnector {
             // FIXME for compatibility with older version...
             String adminName = prefix + "_admin";
             String oldAdminName = "ij3DM_admin";
-            //List<String> dbnames = mongoClient.getDatabaseNames();
-            MongoIterable<String> dbnames2 = mongoClient.listDatabaseNames();
+            //List<String> dbnames = m.getDatabaseNames();
+            MongoIterable<String> dbnames2 = mng.listDatabaseNames();
             for (String string : dbnames2) {
                 if (string.equals(adminName)) {
-                    admin2 = mongoClient.getDatabase(adminName);
+                    admin2 = mng.getDatabase(adminName);
                     break;
                 } else if (string.equals(oldAdminName)) {
-                    admin2 = mongoClient.getDatabase(oldAdminName);
+                    admin2 = mng.getDatabase(oldAdminName);
                     break;
                 }
             }
-            admin2 = mongoClient.getDatabase(adminName);
+            admin2 = mng.getDatabase(adminName);
 
 //            if (dbnames.contains(adminName)) {
-//                admin2 = mongoClient.getDatabase(adminName);
+//                admin2 = m.getDatabase(adminName);
 //            } else if (dbnames.contains(oldAdminName)) {
-//                admin = mongoClient.getDB(oldAdminName);
+//                admin = m.getDB(oldAdminName);
 //            } else {
-//                admin = mongoClient.getDB(adminName); //creates the admin database
+//                admin = m.getDB(adminName); //creates the admin database
 //            }
 
-            MongoCollection adminUser2 = admin2.getCollection("user");
-            MongoCollection adminProject2 = admin2.getCollection("dbnames");
-            MongoCollection help2 = admin2.getCollection("help");
+            MongoCollection adminUser2= admin2.getCollection("user");
+            MongoCollection adminProject2= admin2.getCollection("dbnames");
+            MongoCollection help2= admin2.getCollection("help");
 
 //            adminUser = admin2.getCollection("user");
 //            adminProject = admin2.getCollection("dbnames");
@@ -247,18 +257,18 @@ public class MongoConnector {
             // FIXME for compatibility with older version...
             String adminName = prefix + "_admin";
             String oldAdminName = "ij3DM_admin";
-            // MongoIterable<String> dbnames=mongoClient.listDatabaseNames(); // new version
-            List<String> dbnames = mongoClient.getDatabaseNames();
+            List<String> dbnames = mng.getDatabaseNames();
+
             if (dbnames.contains(adminName)) {
-                admin = mongoClient.getDB(adminName);
+                admin = mng.getDB(adminName);
                 // new version
-                admin2 = mongoClient.getDatabase(adminName);
+//                admin2 = mongoClient.getDatabase(adminName);
             } else if (dbnames.contains(oldAdminName)) {
-                admin = mongoClient.getDB(oldAdminName);
+                admin = mng.getDB(oldAdminName);
             } else {
-                admin = mongoClient.getDB(adminName); //creates the admin database
+                admin = mng.getDB(adminName); //creates the admin database
                 // new version
-                admin2 = mongoClient.getDatabase(adminName);
+//                admin2 = mongoClient.getDatabase(adminName);
             }
             adminUser = admin.getCollection("user");
             adminProject = admin.getCollection("dbnames");
@@ -275,19 +285,19 @@ public class MongoConnector {
             IJ.showStatus("creating connection with db...");
         }
         //try {
-        mongoClient = new MongoClient(host);
+        mng = new MongoClient(mongoHost);
         //} catch (UnknownHostException e) {
         //    exceptionPrinter.print(e, "ukhe:", Core.GUIMode);
         //}
     }
 
     public boolean isConnected() {
-        if (mongoClient == null) {
+        if (mng == null) {
             return false;
         }
-        MongoIterable<String> l;
+        List<String> l;
         try {
-            l = mongoClient.listDatabaseNames();
+            l = mng.getDatabaseNames();
             //l = mongoClient.getDatabaseNames();
         } catch (Exception e) {
             if (Core.GUIMode) {
@@ -299,11 +309,11 @@ public class MongoConnector {
     }
 
     public void close() {
-        this.mongoClient.close();
+        this.mng.close();
     }
 
     public MongoConnector duplicate(Boolean setProject) {
-        MongoConnector dup = new MongoConnector(host);
+        MongoConnector dup = new MongoConnector(host, null, null);
         dup.setUser(username, true);
         if (setProject) {
             dup.setProject(projectName);
@@ -354,7 +364,7 @@ public class MongoConnector {
                     return null;
                 }
                 String settingsDB = prefix + "_" + username + "_settings";
-                List<String> names = mongoClient.getDatabaseNames();
+                List<String> names = mng.getDatabaseNames();
                 while (names.contains(settingsDB)) {
                     settingsDB = settingsDB + "0";
                 }
@@ -366,16 +376,16 @@ public class MongoConnector {
             }
             userId = (ObjectId) user.get("_id");
             //IJ.log("settings DB:"+user.getString("settingsDB"));
-            settings = mongoClient.getDB(user.getString("settingsDB"));
+            settings = mng.getDB(user.getString("settingsDB"));
             if (settings == null) {
                 IJ.log("settings null");
             }
             if (!settings.collectionExists("nucleus")) {
                 settings.createCollection("nucleus", new BasicDBObject());
-            }
+            }//IJ.log("collection nucleus created!");}
             if (!settings.collectionExists("channel")) {
                 settings.createCollection("channel", new BasicDBObject());
-            }
+            }//IJ.log("collection channel created!");}
             nucleusSettings = settings.getCollection("nucleus");
             channelSettings = settings.getCollection("channel");
 
@@ -446,7 +456,7 @@ public class MongoConnector {
             r = r && dumpCollection(projectDBName, col, outputPath);
         }
         if (inputImages || outputImages) {
-            ImageManager im = new ImageManager(this, mongoClient.getDB(projectDBName));
+            ImageManager im = new ImageManager(this, mng.getDB(projectDBName));
             if (inputImages) {
                 for (String col : im.getFieldCollections()) {
                     r = r && dumpCollection(projectDBName, col, outputPath);
@@ -636,7 +646,7 @@ public class MongoConnector {
         }
         adminProject.remove(new BasicDBObject("user_id", this.userId));
         adminUser.remove(new BasicDBObject("_id", this.userId));
-        mongoClient.dropDatabase(settings.getName());
+        mng.dropDatabase(settings.getName());
 
     }
 
@@ -674,7 +684,7 @@ public class MongoConnector {
         if (dbname == null) {
             return false;
         }
-        project = mongoClient.getDB(dbname);
+        project = mng.getDB(dbname);
         experiment = project.getCollection("experiment");
         structureMeasurement = project.getCollection("structureMeasurement");
         nucleus = project.getCollection("nucleus");
@@ -703,7 +713,7 @@ public class MongoConnector {
             return;
         }
         String dbname = prefix + "_" + username + "_" + name;
-        List<String> dbnames = mongoClient.getDatabaseNames();
+        List<String> dbnames = mng.getDatabaseNames();
         while (dbnames.contains(dbname)) {
             dbname += "0";
         }
@@ -721,7 +731,7 @@ public class MongoConnector {
         if (f == null) {
             return;
         }
-        mongoClient.dropDatabase(((BasicDBObject) f).getString("dbname"));
+        mng.dropDatabase(((BasicDBObject) f).getString("dbname"));
         adminProject.remove(query);
         if (Core.GUIMode) {
             IJ.log("project:" + name + " removed!");
@@ -799,7 +809,7 @@ public class MongoConnector {
         if (fol == null) {
             return res;
         }
-        DB f = mongoClient.getDB(fol);
+        DB f = mng.getDB(fol);
         DBCollection xp = f.getCollection("experiment");
 
         DBCursor cur = xp.find();
@@ -1301,7 +1311,7 @@ public class MongoConnector {
     }
 
     public synchronized void removeInputImages(ObjectId fieldId, boolean removeThumbnail) {
-        DBObject queryField = new BasicDBObject("field_id", fieldId);
+        DBObject queryField = new BasicDBObject("field_id", (ObjectId) fieldId);
         //List<GridFSDBFile> files = this.gfsField.find(queryField);
         //ij.IJ.log("files found: "+files.size());
         //for (GridFSDBFile f : files) IJ.log(f.getFilename() + " "+f.toString());
@@ -1569,9 +1579,14 @@ public class MongoConnector {
     }
 
     public CommandResult getCmdLines() {
-        DB db = this.mongoClient.getDB("admin");
+        DB db = this.mng.getDB("admin");
         DBObject cmd = new BasicDBObject();
         cmd.put("getCmdLineOpts", 1);
         return db.command(cmd);
+    }
+
+    public DB getMongoDB(String DBname){
+    	DB dataB = mng.getDB(DBname);
+    	return dataB;
     }
 }

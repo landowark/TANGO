@@ -23,6 +23,13 @@ import tango.mongo.MongoConnector;
 import tango.parameter.*;
 import tango.util.SystemEnvironmentVariable;
 import tango.util.Utils;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import java.awt.Dimension;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -167,7 +174,8 @@ public class Connector extends javax.swing.JPanel {
     private void connect() {
         connecting = true;
         try {
-            Core.mongoConnector = new MongoConnector(host.getText());
+            System.out.println(mongoUser.getText() + mongoPwd.getText());
+            Core.mongoConnector = new MongoConnector(host.getText(), mongoUser.getText(), mongoPwd.getText());
             if (!Core.mongoConnector.isConnected()) {
                 toggleEnableButtons(false, false);
                 return;
@@ -245,6 +253,12 @@ public class Connector extends javax.swing.JPanel {
         connectionPanel = new javax.swing.JPanel();
         hostLabel = new javax.swing.JLabel();
         host = new javax.swing.JTextField();
+        host.setToolTipText("Address of MongoDB");
+        mongoUserLabel = new javax.swing.JLabel();
+        mongoUser = new javax.swing.JTextField();
+        mongoPwdLabel = new javax.swing.JLabel();
+        mongoPwdLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        mongoPwd = new javax.swing.JTextField();
         connect = new javax.swing.JButton();
         usernames = new javax.swing.JComboBox();
         userLabel = new javax.swing.JLabel();
@@ -265,9 +279,9 @@ public class Connector extends javax.swing.JPanel {
 
         setMaximumSize(new java.awt.Dimension(1024, 600));
         setMinimumSize(new java.awt.Dimension(1024, 600));
-        setPreferredSize(new java.awt.Dimension(1024, 600));
+        setPreferredSize(new Dimension(1132, 703));
 
-        connectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Database Connection"));
+        connectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("MongoDB Connection"));
 
         hostLabel.setText("Host:");
 
@@ -280,6 +294,19 @@ public class Connector extends javax.swing.JPanel {
                 hostActionPerformed(evt);
             }
         });
+        mongoUserLabel.setText("Mongo User:");
+        mongoUser.setToolTipText("Authorized user of MongoDB");
+        mongoUser.setMaximumSize(new java.awt.Dimension(152, 25));
+        mongoUser.setMinimumSize(new java.awt.Dimension(152, 25));
+        mongoUser.setPreferredSize(new java.awt.Dimension(152, 25));
+        //mongoUser.setColumns(10);
+
+        mongoPwdLabel.setText("Password:");
+        mongoPwd.setToolTipText("Password of authorized MongoDB user");
+        mongoPwd.setMaximumSize(new java.awt.Dimension(152, 25));
+        mongoPwd.setMinimumSize(new java.awt.Dimension(152, 25));
+        mongoPwd.setPreferredSize(new java.awt.Dimension(152, 25));
+        //mongoPwd.setColumns(10);
 
         connect.setText("Connect");
         connect.addActionListener(new java.awt.event.ActionListener() {
@@ -330,52 +357,76 @@ public class Connector extends javax.swing.JPanel {
         javax.swing.GroupLayout connectionPanelLayout = new javax.swing.GroupLayout(connectionPanel);
         connectionPanel.setLayout(connectionPanelLayout);
         connectionPanelLayout.setHorizontalGroup(
-            connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(connectionPanelLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(connect, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(newUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(deleteUsr, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(connectionPanelLayout.createSequentialGroup()
-                        .addGroup(connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(connectionPanelLayout.createSequentialGroup()
-                                .addComponent(hostLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(host, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(connectionPanelLayout.createSequentialGroup()
-                                .addComponent(userLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(usernames, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(connectionPanelLayout.createSequentialGroup()
-                        .addComponent(helpButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(websiteButton, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)))
-                .addContainerGap())
+                connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.TRAILING)
+                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                        .addComponent(connect, GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
+                                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                                                .addComponent(hostLabel)
+                                                                                .addPreferredGap(ComponentPlacement.UNRELATED)
+                                                                                .addComponent(host, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                                                        .addComponent(mongoPwdLabel)
+                                                                                        .addComponent(mongoUserLabel))
+                                                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                                                        .addGroup(Alignment.TRAILING, connectionPanelLayout.createSequentialGroup()
+                                                                                                .addComponent(mongoUser, GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                                                                                                .addPreferredGap(ComponentPlacement.RELATED))
+                                                                                        .addComponent(mongoPwd, GroupLayout.PREFERRED_SIZE, 108, Short.MAX_VALUE))))
+                                                                .addGap(550))
+                                                        .addComponent(newUser, GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE))
+                                                .addContainerGap())
+                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                                .addComponent(userLabel)
+                                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                                .addComponent(usernames, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(0, 571, Short.MAX_VALUE))
+                                                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                                                .addComponent(helpButton, GroupLayout.PREFERRED_SIZE, 109, GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(18)
+                                                                .addComponent(websiteButton, GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE))
+                                                        .addComponent(deleteUsr, GroupLayout.DEFAULT_SIZE, 781, Short.MAX_VALUE))
+                                                .addGap(20))))
         );
         connectionPanelLayout.setVerticalGroup(
-            connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(connectionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostLabel)
-                    .addComponent(host, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(connect)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(usernames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(userLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(newUser)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deleteUsr)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(connectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(helpButton)
-                    .addComponent(websiteButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                connectionPanelLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(connectionPanelLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.BASELINE)
+                                        .addComponent(host, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(hostLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18)
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.BASELINE)
+                                        .addComponent(mongoUser, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(mongoUserLabel))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.BASELINE)
+                                        .addComponent(mongoPwdLabel)
+                                        .addComponent(mongoPwd, GroupLayout.PREFERRED_SIZE, 26, Short.MAX_VALUE))
+                                .addGap(6)
+                                .addComponent(connect)
+                                .addPreferredGap(ComponentPlacement.UNRELATED)
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.BASELINE)
+                                        .addComponent(usernames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(userLabel))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(newUser)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(deleteUsr)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(connectionPanelLayout.createParallelGroup(Alignment.BASELINE)
+                                        .addComponent(helpButton)
+                                        .addComponent(websiteButton))
+                                .addGap(34))
         );
 
         ExportImportPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Import/Export Data"));
@@ -403,32 +454,32 @@ public class Connector extends javax.swing.JPanel {
         javax.swing.GroupLayout ExportImportPanelLayout = new javax.swing.GroupLayout(ExportImportPanel);
         ExportImportPanel.setLayout(ExportImportPanelLayout);
         ExportImportPanelLayout.setHorizontalGroup(
-            ExportImportPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ExportImportPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(ExportImportPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(exportData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(ExportImportPanelLayout.createSequentialGroup()
-                        .addGroup(ExportImportPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(exportOutput)
-                            .addComponent(exportInput))
-                        .addGap(0, 78, Short.MAX_VALUE))
-                    .addComponent(importData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                ExportImportPanelLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(ExportImportPanelLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(ExportImportPanelLayout.createParallelGroup(Alignment.LEADING)
+                                        .addComponent(exportData, GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                                        .addGroup(ExportImportPanelLayout.createSequentialGroup()
+                                                .addGroup(ExportImportPanelLayout.createParallelGroup(Alignment.LEADING)
+                                                        .addComponent(exportOutput)
+                                                        .addComponent(exportInput))
+                                                .addGap(0, 78, Short.MAX_VALUE))
+                                        .addComponent(importData, GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
+                                .addContainerGap())
         );
         ExportImportPanelLayout.setVerticalGroup(
-            ExportImportPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ExportImportPanelLayout.createSequentialGroup()
-                .addComponent(exportInput)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exportOutput)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exportData)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(importData)
-                .addContainerGap(20, Short.MAX_VALUE))
+                ExportImportPanelLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(ExportImportPanelLayout.createSequentialGroup()
+                                .addComponent(exportInput)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(exportOutput)
+                                .addGap(52)
+                                .addComponent(exportData)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(importData)
+                                .addContainerGap(173, Short.MAX_VALUE))
         );
-
+        ExportImportPanel.setLayout(ExportImportPanelLayout);
         exportImportPCPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Import/Export Processing Chains"));
 
         exportSettings.setText("Export Processing Chains");
@@ -471,40 +522,39 @@ public class Connector extends javax.swing.JPanel {
         optionImagePanel.setLayout(new javax.swing.BoxLayout(optionImagePanel, javax.swing.BoxLayout.PAGE_AXIS));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(connectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ExportImportPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(exportImportPCPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(optionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(optionImagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(30)
+                                .addComponent(connectionPanel, GroupLayout.PREFERRED_SIZE, 417, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+                                        .addComponent(ExportImportPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(exportImportPCPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                        .addComponent(optionPanel, GroupLayout.PREFERRED_SIZE, 457, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(optionImagePanel, GroupLayout.PREFERRED_SIZE, 457, GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(optionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(optionImagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ExportImportPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(exportImportPCPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(322, 322, 322))))
+                layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(optionPanel, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                .addComponent(optionImagePanel, GroupLayout.PREFERRED_SIZE, 108, GroupLayout.PREFERRED_SIZE)
+                                                .addGap(0, 379, Short.MAX_VALUE))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                                                        .addComponent(ExportImportPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addComponent(connectionPanel, GroupLayout.PREFERRED_SIZE, 416, GroupLayout.PREFERRED_SIZE))
+                                                .addPreferredGap(ComponentPlacement.RELATED)
+                                                .addComponent(exportImportPCPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addGap(322))))
         );
+        this.setLayout(layout);
     }// </editor-fold>//GEN-END:initComponents
 
     private void exportDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataActionPerformed
@@ -675,5 +725,9 @@ public class Connector extends javax.swing.JPanel {
     private javax.swing.JLabel userLabel;
     private javax.swing.JComboBox usernames;
     private javax.swing.JButton websiteButton;
+    private javax.swing.JTextField mongoUser;
+    private javax.swing.JTextField mongoPwd;
+    private javax.swing.JLabel mongoUserLabel;
+    private javax.swing.JLabel mongoPwdLabel;
     // End of variables declaration//GEN-END:variables
 }
